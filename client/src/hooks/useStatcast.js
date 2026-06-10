@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
 
-const CURRENT_SEASON = 2025
+const CURRENT_SEASON = new Date().getFullYear()
 
 export function useBatterStatcast(season = CURRENT_SEASON) {
   return useQuery({
