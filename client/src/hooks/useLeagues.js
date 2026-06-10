@@ -3,17 +3,19 @@ import axios from 'axios'
 
 const ESPN_BASE = '/espn-proxy/apis/v3/games/flb'
 
-// ── ESPN API (called directly from browser — avoids server-side IP block) ──
+// ── ESPN API via Vite proxy ──
+// Requests go: browser → localhost:5173/espn-proxy → fantasy.espn.com
+// The proxy rewrites Origin/Referer and forwards espn_s2/SWID as Cookie.
 
-function espnHeaders(espn_s2, swid) {
-  const h = { 'Content-Type': 'application/json' }
-  // Cookies only work when the API is same-origin in a browser context.
-  // For private leagues the user must be logged into espn.com in the same browser.
-  return h
-}
-
-async function espnFetch(url) {
-  const res = await fetch(url)
+async function espnFetch(url, league = {}) {
+  const headers = {}
+  if (league.espn_s2) headers['x-espn-s2'] = league.espn_s2
+  if (league.swid)    headers['x-swid']     = league.swid
+  const res = await fetch(url, { headers })
+  if (res.status === 401) {
+    const body = await res.json().catch(() => ({}))
+    throw new Error(body.error || 'ESPN auth required — add espn_s2 + SWID in League Management')
+  }
   if (!res.ok) throw new Error(`ESPN ${res.status}`)
   return res.json()
 }
@@ -54,20 +56,19 @@ function parseRosters(data) {
         proTeam: info.proTeamId,
         stats: isPitcher
           ? {
-              era: raw[47] != null ? raw[47].toFixed(2) : '—',
+              era:  raw[47] != null ? raw[47].toFixed(2) : '—',
               whip: raw[41] != null ? raw[41].toFixed(2) : '—',
-              k9: raw[48] != null ? raw[48].toFixed(1) : '—',
-              sv: raw[57] ?? 0,
+              k9:   raw[48] != null ? raw[48].toFixed(1) : '—',
+              sv:   raw[57] ?? 0,
               wins: raw[53] ?? 0,
-              ks: raw[48] != null ? Math.round(raw[48]) : '—',
             }
           : {
-              avg: raw[2] != null ? raw[2].toFixed(3) : '—',
-              hr: raw[5] ?? 0,
-              rbi: raw[6] ?? 0,
-              sb: raw[23] ?? 0,
-              runs: raw[4] ?? 0,
-              ops: raw[18] != null ? raw[18].toFixed(3) : '—',
+              avg:  raw[2]  != null ? raw[2].toFixed(3)  : '—',
+              hr:   raw[5]  ?? 0,
+              rbi:  raw[6]  ?? 0,
+              sb:   raw[23] ?? 0,
+              runs: raw[4]  ?? 0,
+              ops:  raw[18] != null ? raw[18].toFixed(3) : '—',
             },
       }
     }),
@@ -86,13 +87,12 @@ export function useLeagues() {
   })
 }
 
-// Fetch ESPN rosters directly from the browser
 export function useLeagueRosters(league, enabled = true) {
   return useQuery({
     queryKey: ['league-rosters', league?.league_id, league?.season],
     queryFn: async () => {
       const url = `${ESPN_BASE}/seasons/${league.season}/segments/0/leagues/${league.league_id}?view=mRoster&view=mTeam`
-      const data = await espnFetch(url)
+      const data = await espnFetch(url, league)
       return parseRosters(data)
     },
     enabled: !!league?.league_id && !!league?.season && enabled,
@@ -113,9 +113,11 @@ export function useLeagueFreeAgents(league, enabled = true) {
         },
       })
       const url = `${ESPN_BASE}/seasons/${league.season}/segments/0/leagues/${league.league_id}?view=kona_player_info`
-      const res = await fetch(url, {
-        headers: { 'X-Fantasy-Filter': filter },
-      })
+      const headers = { 'X-Fantasy-Filter': filter }
+      if (league.espn_s2) headers['x-espn-s2'] = league.espn_s2
+      if (league.swid)    headers['x-swid']     = league.swid
+      const res = await fetch(url, { headers })
+      if (res.status === 401) throw new Error('ESPN auth required — add espn_s2 + SWID in League Management')
       if (!res.ok) throw new Error(`ESPN ${res.status}`)
       const data = await res.json()
       if (!data?.players) return []
