@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 
-const ESPN_BASE = 'https://fantasy.espn.com/apis/v3/games/flb'
+const ESPN_BASE = '/espn-proxy/apis/v3/games/flb'
 
 // ── ESPN API (called directly from browser — avoids server-side IP block) ──
 
@@ -13,7 +13,7 @@ function espnHeaders(espn_s2, swid) {
 }
 
 async function espnFetch(url) {
-  const res = await fetch(url, { credentials: 'include' })
+  const res = await fetch(url)
   if (!res.ok) throw new Error(`ESPN ${res.status}`)
   return res.json()
 }
@@ -114,7 +114,6 @@ export function useLeagueFreeAgents(league, enabled = true) {
       })
       const url = `${ESPN_BASE}/seasons/${league.season}/segments/0/leagues/${league.league_id}?view=kona_player_info`
       const res = await fetch(url, {
-        credentials: 'include',
         headers: { 'X-Fantasy-Filter': filter },
       })
       if (!res.ok) throw new Error(`ESPN ${res.status}`)

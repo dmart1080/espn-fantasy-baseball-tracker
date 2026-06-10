@@ -2,8 +2,7 @@ import { useState } from 'react'
 import { Trophy, Trash2, ExternalLink, Plus, ChevronRight, Lock } from 'lucide-react'
 import { useLeagues, useAddLeague, useDeleteLeague } from '../hooks/useLeagues.js'
 
-// MLB season lags calendar year — 2026 season hasn't started, use 2025
-const CURRENT_YEAR = 2025;
+const CURRENT_YEAR = new Date().getFullYear();
 
 function LeagueForm({ onSubmit, loading }) {
   const [form, setForm] = useState({
