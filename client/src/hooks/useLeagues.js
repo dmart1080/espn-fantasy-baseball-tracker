@@ -5,15 +5,17 @@ const ESPN_BASE = '/espn-proxy/apis/v3/games/flb'
 
 // ── ESPN API (called directly from browser — avoids server-side IP block) ──
 
-function espnHeaders(espn_s2, swid) {
-  const h = { 'Content-Type': 'application/json' }
-  // Cookies only work when the API is same-origin in a browser context.
-  // For private leagues the user must be logged into espn.com in the same browser.
+function getEspnHeaders() {
+  const h = {}
+  const s2 = localStorage.getItem('espn_s2')
+  const swid = localStorage.getItem('espn_swid')
+  if (s2) h['x-espn-s2'] = s2
+  if (swid) h['x-espn-swid'] = swid
   return h
 }
 
 async function espnFetch(url) {
-  const res = await fetch(url)
+  const res = await fetch(url, { headers: getEspnHeaders() })
   if (!res.ok) throw new Error(`ESPN ${res.status}`)
   return res.json()
 }
@@ -114,7 +116,7 @@ export function useLeagueFreeAgents(league, enabled = true) {
       })
       const url = `${ESPN_BASE}/seasons/${league.season}/segments/0/leagues/${league.league_id}?view=kona_player_info`
       const res = await fetch(url, {
-        headers: { 'X-Fantasy-Filter': filter },
+        headers: { ...getEspnHeaders(), 'X-Fantasy-Filter': filter },
       })
       if (!res.ok) throw new Error(`ESPN ${res.status}`)
       const data = await res.json()
