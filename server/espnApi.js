@@ -114,7 +114,219 @@ function getPositionName(slotId) {
   return slots[slotId] || 'UTIL';
 }
 
-// Mock data for when API is unavailable
+// Full player pool — each player appears on exactly one team
+const MOCK_PLAYER_POOL = [
+  // C
+  { id: 1001, name: 'William Contreras',  pos: 0,  team: 'MIL', injury: 'ACTIVE' },
+  { id: 1002, name: 'Adley Rutschman',    pos: 0,  team: 'BAL', injury: 'ACTIVE' },
+  { id: 1003, name: 'J.T. Realmuto',      pos: 0,  team: 'PHI', injury: 'ACTIVE' },
+  { id: 1004, name: 'Salvador Perez',     pos: 0,  team: 'KC',  injury: 'ACTIVE' },
+  { id: 1005, name: 'Sean Murphy',        pos: 0,  team: 'ATL', injury: 'QUESTIONABLE' },
+  { id: 1006, name: 'Cal Raleigh',        pos: 0,  team: 'SEA', injury: 'ACTIVE' },
+  { id: 1007, name: 'Francisco Alvarez',  pos: 0,  team: 'NYM', injury: 'ACTIVE' },
+  { id: 1008, name: 'Gabriel Moreno',     pos: 0,  team: 'ARI', injury: 'ACTIVE' },
+  { id: 1009, name: 'Patrick Bailey',     pos: 0,  team: 'SF',  injury: 'ACTIVE' },
+  { id: 1010, name: 'Tyler Stephenson',   pos: 0,  team: 'CIN', injury: 'ACTIVE' },
+  // 1B
+  { id: 1011, name: 'Freddie Freeman',    pos: 1,  team: 'LAD', injury: 'ACTIVE' },
+  { id: 1012, name: 'Bryce Harper',       pos: 1,  team: 'PHI', injury: 'ACTIVE' },
+  { id: 1013, name: 'Paul Goldschmidt',   pos: 1,  team: 'STL', injury: 'ACTIVE' },
+  { id: 1014, name: 'Pete Alonso',        pos: 1,  team: 'NYM', injury: 'ACTIVE' },
+  { id: 1015, name: 'Christian Walker',   pos: 1,  team: 'ARI', injury: 'ACTIVE' },
+  { id: 1016, name: 'Matt Olson',         pos: 1,  team: 'ATL', injury: 'ACTIVE' },
+  { id: 1017, name: 'Vladimir Guerrero Jr.', pos: 1, team: 'TOR', injury: 'ACTIVE' },
+  { id: 1018, name: 'Spencer Torkelson',  pos: 1,  team: 'DET', injury: 'ACTIVE' },
+  { id: 1019, name: 'Josh Bell',          pos: 1,  team: 'CLE', injury: 'ACTIVE' },
+  { id: 1020, name: 'Anthony Rizzo',      pos: 1,  team: 'NYY', injury: 'IL10' },
+  // 2B
+  { id: 1021, name: 'Jose Altuve',        pos: 2,  team: 'HOU', injury: 'ACTIVE' },
+  { id: 1022, name: 'Marcus Semien',      pos: 2,  team: 'TEX', injury: 'ACTIVE' },
+  { id: 1023, name: 'Gleyber Torres',     pos: 2,  team: 'NYY', injury: 'ACTIVE' },
+  { id: 1024, name: 'Ozzie Albies',       pos: 2,  team: 'ATL', injury: 'ACTIVE' },
+  { id: 1025, name: 'Jeff McNeil',        pos: 2,  team: 'NYM', injury: 'ACTIVE' },
+  { id: 1026, name: 'Brendan Rodgers',    pos: 2,  team: 'COL', injury: 'ACTIVE' },
+  { id: 1027, name: 'Luis Arraez',        pos: 2,  team: 'SD',  injury: 'ACTIVE' },
+  { id: 1028, name: 'DJ LeMahieu',        pos: 2,  team: 'NYY', injury: 'QUESTIONABLE' },
+  { id: 1029, name: 'Andres Gimenez',     pos: 2,  team: 'CLE', injury: 'ACTIVE' },
+  { id: 1030, name: 'Jorge Polanco',      pos: 2,  team: 'SEA', injury: 'ACTIVE' },
+  // 3B
+  { id: 1031, name: 'Manny Machado',      pos: 3,  team: 'SD',  injury: 'ACTIVE' },
+  { id: 1032, name: 'Austin Riley',       pos: 3,  team: 'ATL', injury: 'ACTIVE' },
+  { id: 1033, name: 'Rafael Devers',      pos: 3,  team: 'BOS', injury: 'ACTIVE' },
+  { id: 1034, name: 'Jose Ramirez',       pos: 3,  team: 'CLE', injury: 'ACTIVE' },
+  { id: 1035, name: 'Nolan Arenado',      pos: 3,  team: 'STL', injury: 'ACTIVE' },
+  { id: 1036, name: 'Max Muncy',          pos: 3,  team: 'LAD', injury: 'ACTIVE' },
+  { id: 1037, name: 'Gunnar Henderson',   pos: 3,  team: 'BAL', injury: 'ACTIVE' },
+  { id: 1038, name: 'Ke\'Bryan Hayes',    pos: 3,  team: 'PIT', injury: 'ACTIVE' },
+  { id: 1039, name: 'Eugenio Suarez',     pos: 3,  team: 'ARI', injury: 'ACTIVE' },
+  { id: 1040, name: 'Alec Bohm',          pos: 3,  team: 'PHI', injury: 'ACTIVE' },
+  // SS
+  { id: 1041, name: 'Trea Turner',        pos: 4,  team: 'PHI', injury: 'ACTIVE' },
+  { id: 1042, name: 'Carlos Correa',      pos: 4,  team: 'MIN', injury: 'ACTIVE' },
+  { id: 1043, name: 'Corey Seager',       pos: 4,  team: 'TEX', injury: 'ACTIVE' },
+  { id: 1044, name: 'Xander Bogaerts',    pos: 4,  team: 'SD',  injury: 'ACTIVE' },
+  { id: 1045, name: 'Willy Adames',       pos: 4,  team: 'MIL', injury: 'ACTIVE' },
+  { id: 1046, name: 'Bo Bichette',        pos: 4,  team: 'TOR', injury: 'ACTIVE' },
+  { id: 1047, name: 'Jeremy Pena',        pos: 4,  team: 'HOU', injury: 'ACTIVE' },
+  { id: 1048, name: 'CJ Abrams',          pos: 4,  team: 'WSH', injury: 'ACTIVE' },
+  { id: 1049, name: 'Anthony Volpe',      pos: 4,  team: 'NYY', injury: 'ACTIVE' },
+  { id: 1050, name: 'Ezequiel Tovar',     pos: 4,  team: 'COL', injury: 'ACTIVE' },
+  // OF
+  { id: 1051, name: 'Shohei Ohtani',      pos: 5,  team: 'LAD', injury: 'ACTIVE' },
+  { id: 1052, name: 'Ronald Acuna Jr.',   pos: 5,  team: 'ATL', injury: 'ACTIVE' },
+  { id: 1053, name: 'Mike Trout',         pos: 5,  team: 'LAA', injury: 'ACTIVE' },
+  { id: 1054, name: 'Yordan Alvarez',     pos: 5,  team: 'HOU', injury: 'ACTIVE' },
+  { id: 1055, name: 'Juan Soto',          pos: 5,  team: 'NYY', injury: 'ACTIVE' },
+  { id: 1056, name: 'Kyle Tucker',        pos: 5,  team: 'CHC', injury: 'ACTIVE' },
+  { id: 1057, name: 'Julio Rodriguez',    pos: 5,  team: 'SEA', injury: 'ACTIVE' },
+  { id: 1058, name: 'Corbin Carroll',     pos: 5,  team: 'ARI', injury: 'ACTIVE' },
+  { id: 1059, name: 'Cedric Mullins',     pos: 5,  team: 'BAL', injury: 'ACTIVE' },
+  { id: 1060, name: 'Teoscar Hernandez',  pos: 5,  team: 'LAD', injury: 'ACTIVE' },
+  { id: 1061, name: 'Bryan Reynolds',     pos: 5,  team: 'PIT', injury: 'ACTIVE' },
+  { id: 1062, name: 'Randy Arozarena',    pos: 5,  team: 'TB',  injury: 'ACTIVE' },
+  { id: 1063, name: 'Ian Happ',           pos: 5,  team: 'CHC', injury: 'ACTIVE' },
+  { id: 1064, name: 'Lourdes Gurriel Jr.',pos: 5,  team: 'ARI', injury: 'ACTIVE' },
+  { id: 1065, name: 'George Springer',    pos: 5,  team: 'TOR', injury: 'QUESTIONABLE' },
+  { id: 1066, name: 'Cody Bellinger',     pos: 5,  team: 'NYY', injury: 'ACTIVE' },
+  { id: 1067, name: 'Daulton Varsho',     pos: 5,  team: 'TOR', injury: 'ACTIVE' },
+  { id: 1068, name: 'MJ Melendez',        pos: 5,  team: 'KC',  injury: 'ACTIVE' },
+  { id: 1069, name: 'Starling Marte',     pos: 5,  team: 'NYM', injury: 'IL10' },
+  { id: 1070, name: 'Lars Nootbaar',      pos: 5,  team: 'STL', injury: 'ACTIVE' },
+  // SP
+  { id: 1071, name: 'Gerrit Cole',        pos: 9,  team: 'NYY', injury: 'ACTIVE' },
+  { id: 1072, name: 'Spencer Strider',    pos: 9,  team: 'ATL', injury: 'ACTIVE' },
+  { id: 1073, name: 'Zack Wheeler',       pos: 9,  team: 'PHI', injury: 'ACTIVE' },
+  { id: 1074, name: 'Sandy Alcantara',    pos: 9,  team: 'MIA', injury: 'ACTIVE' },
+  { id: 1075, name: 'Logan Gilbert',      pos: 9,  team: 'SEA', injury: 'ACTIVE' },
+  { id: 1076, name: 'Framber Valdez',     pos: 9,  team: 'HOU', injury: 'ACTIVE' },
+  { id: 1077, name: 'Freddy Peralta',     pos: 9,  team: 'MIL', injury: 'ACTIVE' },
+  { id: 1078, name: 'Dylan Cease',        pos: 9,  team: 'SD',  injury: 'ACTIVE' },
+  { id: 1079, name: 'Pablo Lopez',        pos: 9,  team: 'MIN', injury: 'ACTIVE' },
+  { id: 1080, name: 'Corbin Burnes',      pos: 9,  team: 'BAL', injury: 'ACTIVE' },
+  { id: 1081, name: 'Nestor Cortes',      pos: 9,  team: 'NYY', injury: 'ACTIVE' },
+  { id: 1082, name: 'Max Fried',          pos: 9,  team: 'ATL', injury: 'ACTIVE' },
+  { id: 1083, name: 'Chris Sale',         pos: 9,  team: 'ATL', injury: 'ACTIVE' },
+  { id: 1084, name: 'Kevin Gausman',      pos: 9,  team: 'TOR', injury: 'ACTIVE' },
+  { id: 1085, name: 'Shane McClanahan',   pos: 9,  team: 'TB',  injury: 'IL60' },
+  { id: 1086, name: 'Cristian Javier',    pos: 9,  team: 'HOU', injury: 'ACTIVE' },
+  { id: 1087, name: 'Brandon Woodruff',   pos: 9,  team: 'MIL', injury: 'ACTIVE' },
+  { id: 1088, name: 'Reid Detmers',       pos: 9,  team: 'LAA', injury: 'ACTIVE' },
+  { id: 1089, name: 'George Kirby',       pos: 9,  team: 'SEA', injury: 'ACTIVE' },
+  { id: 1090, name: 'Yoshinobu Yamamoto', pos: 9,  team: 'LAD', injury: 'ACTIVE' },
+  // RP
+  { id: 1091, name: 'Felix Bautista',     pos: 11, team: 'BAL', injury: 'ACTIVE' },
+  { id: 1092, name: 'Josh Hader',         pos: 11, team: 'HOU', injury: 'ACTIVE' },
+  { id: 1093, name: 'Emmanuel Clase',     pos: 11, team: 'CLE', injury: 'ACTIVE' },
+  { id: 1094, name: 'Ryan Helsley',       pos: 11, team: 'STL', injury: 'ACTIVE' },
+  { id: 1095, name: 'Devin Williams',     pos: 11, team: 'MIL', injury: 'ACTIVE' },
+  { id: 1096, name: 'Alexis Diaz',        pos: 11, team: 'CIN', injury: 'ACTIVE' },
+  { id: 1097, name: 'Andres Munoz',       pos: 11, team: 'SEA', injury: 'ACTIVE' },
+  { id: 1098, name: 'Clay Holmes',        pos: 11, team: 'NYY', injury: 'ACTIVE' },
+  { id: 1099, name: 'Evan Phillips',      pos: 11, team: 'LAD', injury: 'ACTIVE' },
+  { id: 1100, name: 'Pete Fairbanks',     pos: 11, team: 'TB',  injury: 'ACTIVE' },
+];
+
+// Seeded random — same values every time for same seed, different per team/player
+function seededRand(seed) {
+  const x = Math.sin(seed + 1) * 10000;
+  return x - Math.floor(x);
+}
+
+function mockBatterStats(playerId) {
+  const s = playerId;
+  return {
+    avg:  (seededRand(s)      * 0.120 + 0.220).toFixed(3),
+    hr:   Math.floor(seededRand(s + 1) * 35 + 3),
+    rbi:  Math.floor(seededRand(s + 2) * 90 + 20),
+    sb:   Math.floor(seededRand(s + 3) * 35),
+    era:  '—',
+    whip: '—',
+    k9:   '—',
+    sv:   0,
+  };
+}
+
+function mockPitcherStats(playerId) {
+  const s = playerId;
+  return {
+    avg:  '—',
+    hr:   0,
+    rbi:  0,
+    sb:   0,
+    era:  (seededRand(s)      * 3.0 + 2.2).toFixed(2),
+    whip: (seededRand(s + 1)  * 0.55 + 0.95).toFixed(2),
+    k9:   (seededRand(s + 2)  * 5.0 + 7.0).toFixed(1),
+    sv:   Math.floor(seededRand(s + 3) * 35),
+  };
+}
+
+const TEAM_NAMES = [
+  ['Big League', 'Chew'],     ['Dinger', 'Kings'],      ['Ace', 'Hunters'],
+  ['Base', 'Stealers'],       ['Power', 'Surge'],        ['The', 'Analytics'],
+  ['Roto', 'Rulers'],         ['Diamond', 'Dogs'],       ['Fastball', 'Factory'],
+  ['Speed', 'Demons'],
+];
+
+// Slot positions each team roster needs: 1C 1-1B 1-2B 1-3B 1-SS 3-OF 2-SP 1-RP 1-SP = 12
+const ROSTER_TEMPLATE = [0, 1, 2, 3, 4, 5, 5, 5, 9, 9, 9, 11];
+
+function buildMockTeams() {
+  // Separate pool by position
+  const byPos = {};
+  for (const p of MOCK_PLAYER_POOL) {
+    if (!byPos[p.pos]) byPos[p.pos] = [];
+    byPos[p.pos].push(p);
+  }
+
+  // Shuffle each position bucket with a fixed seed so assignment is stable
+  for (const pos of Object.keys(byPos)) {
+    byPos[pos].sort((a, b) => seededRand(a.id * 13) - seededRand(b.id * 13));
+  }
+
+  const posIndex = {};
+
+  return TEAM_NAMES.map(([loc, nick], teamIdx) => {
+    const entries = ROSTER_TEMPLATE.map(pos => {
+      if (!posIndex[pos]) posIndex[pos] = 0;
+      const pool = byPos[pos] || [];
+      const player = pool[posIndex[pos] % pool.length];
+      posIndex[pos]++;
+      return player;
+    });
+
+    const wins  = Math.floor(seededRand(teamIdx * 7)  * 55 + 20);
+    const losses= Math.floor(seededRand(teamIdx * 7 + 1) * 45 + 15);
+
+    return {
+      id: teamIdx + 1,
+      name: `${loc} ${nick}`,
+      abbrev: loc.substring(0, 3).toUpperCase(),
+      wins,
+      losses,
+      ties: 0,
+      players: entries.map(p => {
+        const isPitcher = p.pos === 9 || p.pos === 11;
+        return {
+          id: p.id,
+          name: p.name,
+          position: getPositionName(p.pos),
+          eligiblePositions: [getPositionName(p.pos)],
+          injuryStatus: p.injury,
+          stats: isPitcher ? mockPitcherStats(p.id) : mockBatterStats(p.id),
+        };
+      }),
+    };
+  });
+}
+
+// Cached so teams don't reshuffle between requests
+let _mockTeams = null;
+function getMockTeams() {
+  if (!_mockTeams) _mockTeams = buildMockTeams();
+  return _mockTeams;
+}
+
+// Mock data for when ESPN API is unavailable
 function getMockLeagueData(leagueId, season) {
   return {
     id: leagueId,
@@ -124,79 +336,8 @@ function getMockLeagueData(leagueId, season) {
   };
 }
 
-function getMockTeams() {
-  const teamNames = [
-    ['Big League', 'Chew'], ['Dinger', 'Kings'], ['Ace', 'Hunters'],
-    ['Base', 'Stealers'], ['Power', 'Surge'], ['The', 'Analytics'],
-    ['Roto', 'Rulers'], ['Diamond', 'Dogs'], ['Fastball', 'Factory'], ['Speed', 'Demons']
-  ];
-  return teamNames.map((name, i) => ({
-    id: i + 1,
-    location: name[0],
-    nickname: name[1],
-    abbrev: name[0].substring(0, 3).toUpperCase(),
-    record: { overall: { wins: Math.floor(Math.random() * 60 + 20), losses: Math.floor(Math.random() * 40 + 10), ties: 0 } },
-    roster: { entries: getMockRosterEntries() }
-  }));
-}
-
-function getMockRosterEntries() {
-  const players = [
-    { id: 1001, name: 'Shohei Ohtani', pos: 0 },
-    { id: 1002, name: 'Freddie Freeman', pos: 1 },
-    { id: 1003, name: 'Jose Altuve', pos: 2 },
-    { id: 1004, name: 'Manny Machado', pos: 3 },
-    { id: 1005, name: 'Trea Turner', pos: 4 },
-    { id: 1006, name: 'Mike Trout', pos: 5 },
-    { id: 1007, name: 'Ronald Acuna Jr.', pos: 5 },
-    { id: 1008, name: 'Yordan Alvarez', pos: 5 },
-    { id: 1009, name: 'Gerrit Cole', pos: 9 },
-    { id: 1010, name: 'Spencer Strider', pos: 9 },
-    { id: 1011, name: 'Felix Bautista', pos: 11 },
-    { id: 1012, name: 'Josh Hader', pos: 11 },
-  ];
-  return players.map(p => ({
-    playerId: p.id,
-    lineupSlotId: p.pos,
-    playerPoolEntry: {
-      percentOwned: Math.random() * 40 + 60,
-      playerInfo: {
-        fullName: p.name,
-        defaultPositionId: p.pos,
-        eligibleSlots: [p.pos],
-        injuryStatus: Math.random() > 0.9 ? 'QUESTIONABLE' : 'ACTIVE',
-        stats: []
-      }
-    }
-  }));
-}
-
 export function getMockRosters() {
-  return getMockTeams().map(team => ({
-    id: team.id,
-    name: `${team.location} ${team.nickname}`,
-    abbrev: team.abbrev,
-    wins: team.record.overall.wins,
-    losses: team.record.overall.losses,
-    ties: team.record.overall.ties,
-    players: team.roster.entries.map(e => ({
-      id: e.playerId,
-      name: e.playerPoolEntry.playerInfo.fullName,
-      position: getPositionName(e.lineupSlotId),
-      eligiblePositions: [getPositionName(e.lineupSlotId)],
-      injuryStatus: e.playerPoolEntry.playerInfo.injuryStatus,
-      stats: {
-        avg: (Math.random() * 0.120 + 0.220).toFixed(3),
-        hr: Math.floor(Math.random() * 35 + 5),
-        rbi: Math.floor(Math.random() * 90 + 20),
-        sb: Math.floor(Math.random() * 30),
-        era: (Math.random() * 3 + 2).toFixed(2),
-        whip: (Math.random() * 0.6 + 0.9).toFixed(2),
-        k9: (Math.random() * 4 + 7).toFixed(1),
-        sv: Math.floor(Math.random() * 30),
-      }
-    }))
-  }));
+  return getMockTeams();
 }
 
 export function getMockFreeAgents() {
