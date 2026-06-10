@@ -88,8 +88,8 @@ const PITCHER_COLS = [
   { key: 'barrel_pct', label: 'Barrel%', isStatCell: true, statKey: 'barrel_pct', isPitcher: true, sortable: true },
 ];
 
-function WaiverTable({ leagueId }) {
-  const { data: freeAgents, isLoading } = useLeagueFreeAgents(leagueId);
+function WaiverTable({ league }) {
+  const { data: freeAgents, isLoading } = useLeagueFreeAgents(league);
   const { data: batters = [] } = useBatterStatcast(CURRENT_SEASON);
   const { data: pitchers = [] } = usePitcherStatcast(CURRENT_SEASON);
   const { data: sprintData = [] } = useSprintSpeed(CURRENT_SEASON);
@@ -273,7 +273,7 @@ export default function WaiverWire() {
         </div>
       )}
 
-      {selectedLeague && <WaiverTable leagueId={selectedLeague.id} />}
+      {selectedLeague && <WaiverTable league={selectedLeague} />}
     </div>
   );
 }

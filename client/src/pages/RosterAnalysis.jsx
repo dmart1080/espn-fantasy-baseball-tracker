@@ -96,8 +96,8 @@ const PITCHER_COLUMNS = [
   { key: 'barrel_pct', label: 'Barrel%', isStatCell: true, statKey: 'barrel_pct', isPitcher: true, sortable: true },
 ];
 
-function RosterTable({ leagueId }) {
-  const { data: rosters, isLoading, error } = useLeagueRosters(leagueId);
+function RosterTable({ league }) {
+  const { data: rosters, isLoading, error } = useLeagueRosters(league);
   const { data: batters = [] } = useBatterStatcast(CURRENT_SEASON);
   const { data: pitchers = [] } = usePitcherStatcast(CURRENT_SEASON);
   const addToWatchlist = useAddToWatchlist();
@@ -275,7 +275,7 @@ export default function RosterAnalysis() {
         </div>
       )}
 
-      {selectedLeague && <RosterTable leagueId={selectedLeague.id} />}
+      {selectedLeague && <RosterTable league={selectedLeague} />}
     </div>
   );
 }
