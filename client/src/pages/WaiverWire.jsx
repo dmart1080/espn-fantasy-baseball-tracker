@@ -130,13 +130,12 @@ function WaiverTable({ leagueId }) {
     <div>
       {/* Filters */}
       <div className="filters-bar" style={{ marginBottom: 16 }}>
-        <div className="tabs" style={{ borderBottom: 'none', marginBottom: 0 }}>
+        <div className="seg-control">
           {['batters', 'pitchers'].map(mode => (
             <button
               key={mode}
-              className={`tab ${viewMode === mode ? 'active' : ''}`}
+              className={`seg-btn ${viewMode === mode ? 'active' : ''}`}
               onClick={() => { setViewMode(mode); setPosFilter('All'); }}
-              style={{ padding: '6px 12px', fontSize: 12 }}
             >
               {mode.charAt(0).toUpperCase() + mode.slice(1)}
             </button>
