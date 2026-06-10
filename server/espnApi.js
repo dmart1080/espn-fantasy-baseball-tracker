@@ -6,11 +6,23 @@ function buildHeaders(espn_s2, swid) {
   const headers = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+    'Origin': 'https://fantasy.espn.com',
+    'Referer': 'https://fantasy.espn.com/',
   };
   if (espn_s2 && swid) {
     headers['Cookie'] = `espn_s2=${espn_s2}; SWID=${swid}`;
   }
   return headers;
+}
+
+// Log ESPN errors clearly so users know they need cookies
+function espnError(label, status, leagueId) {
+  if (status === 401 || status === 403) {
+    console.warn(`[ESPN] ${label} league ${leagueId} → ${status}. This league is private — add espn_s2 + SWID cookies in Settings.`);
+  } else {
+    console.error(`[ESPN] ${label} league ${leagueId} → ${status}`);
+  }
 }
 
 export async function fetchLeague(leagueId, season, espn_s2, swid) {

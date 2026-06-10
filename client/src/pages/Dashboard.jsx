@@ -3,7 +3,7 @@ import { Trophy, Users, TrendingUp, AlertTriangle, ArrowRight, Activity } from '
 import { useLeagues, useLeagueRosters } from '../hooks/useLeagues.js'
 
 function LeagueCard({ league }) {
-  const { data: rosters, isLoading } = useLeagueRosters(league.id);
+  const { data: rosters, isLoading } = useLeagueRosters(league);
 
   const teams = rosters || [];
   const sorted = [...teams].sort((a, b) => b.wins - a.wins);
