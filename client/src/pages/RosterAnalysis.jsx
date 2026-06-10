@@ -185,13 +185,12 @@ function RosterTable({ leagueId }) {
 
           {/* Filters */}
           <div className="filters-bar">
-            <div className="tabs" style={{ borderBottom: 'none', marginBottom: 0 }}>
+            <div className="seg-control">
               {['all', 'batters', 'pitchers'].map(mode => (
                 <button
                   key={mode}
-                  className={`tab ${viewMode === mode ? 'active' : ''}`}
+                  className={`seg-btn ${viewMode === mode ? 'active' : ''}`}
                   onClick={() => setViewMode(mode)}
-                  style={{ padding: '6px 12px', fontSize: 12 }}
                 >
                   {mode.charAt(0).toUpperCase() + mode.slice(1)}
                 </button>
@@ -200,7 +199,7 @@ function RosterTable({ leagueId }) {
             <input
               type="text"
               className="form-input"
-              style={{ maxWidth: 200 }}
+              style={{ maxWidth: 220 }}
               placeholder="Search players..."
               value={search}
               onChange={e => setSearch(e.target.value)}
