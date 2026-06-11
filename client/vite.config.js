@@ -28,16 +28,33 @@ export default defineConfig({
             proxyReq.setHeader('Accept', 'application/json')
             proxyReq.setHeader('Accept-Language', 'en-US,en;q=0.9')
 
-            // Forward ESPN auth cookies if provided by client
-            const s2 = req.headers['x-espn-s2']
-            const swid = req.headers['x-espn-swid']
-            if (s2 && swid) {
+            // Forward ESPN auth cookies if provided by client.
+            // The espn_s2 value is URL-encoded in localStorage; decode it
+            // so the Cookie header contains the raw base64 value ESPN expects.
+            const s2raw   = req.headers['x-espn-s2']
+            const swidRaw = req.headers['x-espn-swid']
+            if (s2raw && swidRaw) {
+              const s2   = decodeURIComponent(s2raw)
+              const swid = decodeURIComponent(swidRaw)
               proxyReq.setHeader('Cookie', `espn_s2=${s2}; SWID=${swid}`)
             }
 
             // Remove the custom headers so ESPN doesn't see them
             proxyReq.removeHeader('x-espn-s2')
             proxyReq.removeHeader('x-espn-swid')
+          })
+
+          // Intercept ESPN's login redirect (302) and return a clean 401 instead.
+          // Without this the browser follows the redirect to www.espn.com which
+          // has no CORS headers and crashes the fetch with a CORS error.
+          proxy.on('proxyRes', (proxyRes, req, res) => {
+            if (proxyRes.statusCode === 301 || proxyRes.statusCode === 302) {
+              res.writeHead(401, {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+              })
+              res.end(JSON.stringify({ error: 'ESPN auth required — check espn_s2 and SWID in Settings' }))
+            }
           })
         },
       },
