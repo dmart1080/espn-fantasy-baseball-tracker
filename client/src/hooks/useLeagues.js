@@ -7,14 +7,20 @@ const ESPN_BASE = '/espn-proxy/apis/v3/games/flb'
 // Requests go: browser → localhost:5173/espn-proxy → fantasy.espn.com
 // The proxy rewrites Origin/Referer and forwards espn_s2/SWID as Cookie.
 
-async function espnFetch(url, league = {}) {
-  const headers = {}
-  if (league.espn_s2) headers['x-espn-s2'] = league.espn_s2
-  if (league.swid)    headers['x-swid']     = league.swid
-  const res = await fetch(url, { headers })
+function getEspnHeaders() {
+  const h = {}
+  const s2   = localStorage.getItem('espn_s2')
+  const swid = localStorage.getItem('espn_swid')
+  if (s2)   h['x-espn-s2']   = s2
+  if (swid) h['x-espn-swid'] = swid
+  return h
+}
+
+async function espnFetch(url) {
+  const res = await fetch(url, { headers: getEspnHeaders() })
   if (res.status === 401) {
     const body = await res.json().catch(() => ({}))
-    throw new Error(body.error || 'ESPN auth required — add espn_s2 + SWID in League Management')
+    throw new Error(body.error || 'ESPN auth required — add espn_s2 + SWID in Settings')
   }
   if (!res.ok) throw new Error(`ESPN ${res.status}`)
   return res.json()
@@ -92,7 +98,7 @@ export function useLeagueRosters(league, enabled = true) {
     queryKey: ['league-rosters', league?.league_id, league?.season],
     queryFn: async () => {
       const url = `${ESPN_BASE}/seasons/${league.season}/segments/0/leagues/${league.league_id}?view=mRoster&view=mTeam`
-      const data = await espnFetch(url, league)
+      const data = await espnFetch(url)
       return parseRosters(data)
     },
     enabled: !!league?.league_id && !!league?.season && enabled,
@@ -113,11 +119,10 @@ export function useLeagueFreeAgents(league, enabled = true) {
         },
       })
       const url = `${ESPN_BASE}/seasons/${league.season}/segments/0/leagues/${league.league_id}?view=kona_player_info`
-      const headers = { 'X-Fantasy-Filter': filter }
-      if (league.espn_s2) headers['x-espn-s2'] = league.espn_s2
-      if (league.swid)    headers['x-swid']     = league.swid
-      const res = await fetch(url, { headers })
-      if (res.status === 401) throw new Error('ESPN auth required — add espn_s2 + SWID in League Management')
+      const res = await fetch(url, {
+        headers: { ...getEspnHeaders(), 'X-Fantasy-Filter': filter },
+      })
+      if (res.status === 401) throw new Error('ESPN auth required — add espn_s2 + SWID in Settings')
       if (!res.ok) throw new Error(`ESPN ${res.status}`)
       const data = await res.json()
       if (!data?.players) return []

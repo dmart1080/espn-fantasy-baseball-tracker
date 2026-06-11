@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Settings as SettingsIcon, RefreshCw, Database, Globe, Info, Check } from 'lucide-react'
+import { Settings as SettingsIcon, RefreshCw, Database, Globe, Info, Check, Key } from 'lucide-react'
 import axios from 'axios'
 import { useLeagues } from '../hooks/useLeagues.js'
 
@@ -12,6 +12,18 @@ export default function Settings() {
   const [refreshResult, setRefreshResult] = useState(null);
   const [healthStatus, setHealthStatus] = useState(null);
   const [checkingHealth, setCheckingHealth] = useState(false);
+  const [espnS2, setEspnS2] = useState(() => localStorage.getItem('espn_s2') || '');
+  const [espnSwid, setEspnSwid] = useState(() => localStorage.getItem('espn_swid') || '');
+  const [cookieSaved, setCookieSaved] = useState(false);
+
+  function saveCookies() {
+    if (espnS2.trim()) localStorage.setItem('espn_s2', espnS2.trim());
+    else localStorage.removeItem('espn_s2');
+    if (espnSwid.trim()) localStorage.setItem('espn_swid', espnSwid.trim());
+    else localStorage.removeItem('espn_swid');
+    setCookieSaved(true);
+    setTimeout(() => setCookieSaved(false), 2000);
+  }
 
   async function handleCacheRefresh() {
     setRefreshing(true);
@@ -46,6 +58,59 @@ export default function Settings() {
         <div>
           <div className="page-header-title">Settings</div>
           <div className="page-header-sub">Configure the tracker and manage data</div>
+        </div>
+      </div>
+
+      {/* ESPN Auth Cookies */}
+      <div className="card" style={{ marginBottom: 16 }}>
+        <div className="card-header">
+          <span className="card-title">
+            <Key size={14} style={{ marginRight: 6, verticalAlign: 'text-bottom' }} />
+            ESPN Authentication
+          </span>
+        </div>
+        <div className="card-body">
+          <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 16, lineHeight: 1.6 }}>
+            ESPN's API requires your session cookies even for public leagues.
+            Get them from your browser while logged into espn.com:
+            <br />
+            <strong style={{ color: 'var(--text-primary)' }}>F12 → Application → Cookies → espn.com</strong>
+            <br />
+            Copy the values for <code style={{ color: 'var(--accent)' }}>espn_s2</code> and <code style={{ color: 'var(--accent)' }}>SWID</code>.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div className="form-group">
+              <label className="form-label">espn_s2</label>
+              <input
+                className="form-input"
+                placeholder="Paste espn_s2 cookie value..."
+                value={espnS2}
+                onChange={e => setEspnS2(e.target.value)}
+                style={{ fontFamily: 'monospace', fontSize: 12 }}
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">SWID</label>
+              <input
+                className="form-input"
+                placeholder="{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}"
+                value={espnSwid}
+                onChange={e => setEspnSwid(e.target.value)}
+                style={{ fontFamily: 'monospace', fontSize: 12 }}
+              />
+            </div>
+            <div>
+              <button className="btn btn-primary" onClick={saveCookies}>
+                {cookieSaved ? <><Check size={13} /> Saved!</> : 'Save Cookies'}
+              </button>
+              {(espnS2 || espnSwid) && (
+                <button className="btn btn-ghost btn-sm" style={{ marginLeft: 8 }}
+                  onClick={() => { setEspnS2(''); setEspnSwid(''); localStorage.removeItem('espn_s2'); localStorage.removeItem('espn_swid'); }}>
+                  Clear
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
