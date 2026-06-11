@@ -12,7 +12,7 @@ export default defineConfig({
       // Client sends ESPN cookies as X-ESPN-S2 / X-ESPN-SWID headers;
       // the proxy converts them to a proper Cookie header for ESPN.
       '/espn-proxy': {
-        target: 'https://fantasy.espn.com',
+        target: 'https://lm-api-reads.fantasy.espn.com',
         changeOrigin: true,
         secure: true,
         rewrite: (path) => path.replace(/^\/espn-proxy/, ''),
@@ -20,7 +20,7 @@ export default defineConfig({
           proxy.on('proxyReq', (proxyReq, req) => {
             // Spoof browser-like headers
             proxyReq.setHeader('Origin', 'https://fantasy.espn.com')
-            proxyReq.setHeader('Referer', 'https://fantasy.espn.com/')
+            proxyReq.setHeader('Referer', 'https://fantasy.espn.com/baseball/league')
             proxyReq.setHeader(
               'User-Agent',
               'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
@@ -49,11 +49,16 @@ export default defineConfig({
           // has no CORS headers and crashes the fetch with a CORS error.
           proxy.on('proxyRes', (proxyRes, req, res) => {
             if (proxyRes.statusCode === 301 || proxyRes.statusCode === 302) {
+              const location = proxyRes.headers['location'] || 'unknown'
+              console.log(`[espn-proxy] ${proxyRes.statusCode} redirect → ${location}`)
               res.writeHead(401, {
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': '*',
               })
-              res.end(JSON.stringify({ error: 'ESPN auth required — check espn_s2 and SWID in Settings' }))
+              res.end(JSON.stringify({
+                error: 'ESPN auth required — check espn_s2 and SWID in Settings',
+                redirectedTo: location,
+              }))
             }
           })
         },
